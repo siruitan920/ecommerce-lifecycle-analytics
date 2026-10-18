@@ -1,0 +1,755 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>电商用户指标看板</title>
+<meta name="description" content="海外多品类电商 2019 年 10–11 月行为日志的核心指标、异常归因、漏斗、留存、生命周期与数据质量看板">
+<style>
+:root {
+  color-scheme: light;
+  --page: #f4f4f1;
+  --surface: #fcfcfb;
+  --surface-2: #f0efec;
+  --border: #e2e1dc;
+  --grid: #e6e5e0;
+  --text: #0b0b0b;
+  --text-2: #52514e;
+  --text-3: #75746f;
+  --accent: #2a78d6;
+  --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100;
+  --s5: #e87ba4; --s6: #008300; --s7: #6250d6; --s8: #e34948;
+  --shade: rgba(120, 118, 110, 0.13);
+  --good: #0ca30c; --warning: #fab219; --serious: #ec835a; --critical: #d03b3b;
+  --good-text: #006300; --critical-text: #b42a2a;
+  --seq-0: #cde2fb; --seq-1: #9ec5f4; --seq-2: #6da7ec; --seq-3: #3987e5; --seq-4: #256abf; --seq-5: #184f95; --seq-6: #0d366b;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --page: #121211; --surface: #1a1a19; --surface-2: #232321; --border: #33332f; --grid: #2c2c29;
+    --text: #f0efec; --text-2: #c3c2b7; --text-3: #9b9a92; --accent: #3987e5;
+    --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181; --s6: #008300; --s7: #9085e9; --s8: #e66767;
+    --shade: rgba(200, 198, 190, 0.10);
+    --good-text: #4cc94c; --critical-text: #ef7b7b;
+    --seq-0: #184f95; --seq-1: #1c5cab; --seq-2: #256abf; --seq-3: #2a78d6; --seq-4: #5598e7; --seq-5: #86b6ef; --seq-6: #cde2fb;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #121211; --surface: #1a1a19; --surface-2: #232321; --border: #33332f; --grid: #2c2c29;
+  --text: #f0efec; --text-2: #c3c2b7; --text-3: #9b9a92; --accent: #3987e5;
+  --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181; --s6: #008300; --s7: #9085e9; --s8: #e66767;
+  --shade: rgba(200, 198, 190, 0.10);
+  --good-text: #4cc94c; --critical-text: #ef7b7b;
+  --seq-0: #184f95; --seq-1: #1c5cab; --seq-2: #256abf; --seq-3: #2a78d6; --seq-4: #5598e7; --seq-5: #86b6ef; --seq-6: #cde2fb;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--page); color: var(--text);
+  font: 14px/1.55 -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.wrap { max-width: 1240px; margin: 0 auto; padding: 24px 24px 48px; }
+header { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: flex-end; justify-content: space-between; margin-bottom: 18px; }
+h1 { font-size: 22px; margin: 0 0 4px; letter-spacing: 0.01em; }
+.sub { color: var(--text-2); font-size: 13px; }
+.links { display: flex; gap: 14px; font-size: 13px; align-items: center; flex-wrap: wrap; }
+.theme-btn { background: var(--surface); border: 1px solid var(--border); color: var(--text-2); border-radius: 6px; padding: 4px 10px; cursor: pointer; font: inherit; font-size: 12px; }
+nav.tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--border); margin-bottom: 16px; overflow-x: auto; scrollbar-width: none; }
+nav.tabs button {
+  background: none; border: 0; border-bottom: 2px solid transparent; padding: 10px 14px; font: inherit; font-size: 14px;
+  color: var(--text-2); cursor: pointer; white-space: nowrap;
+}
+nav.tabs button[aria-selected="true"] { color: var(--text); border-bottom-color: var(--accent); font-weight: 600; }
+.filters { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; margin-bottom: 16px; font-size: 13px; color: var(--text-2); }
+.filters label { display: flex; gap: 6px; align-items: center; }
+.seg { display: inline-flex; border: 1px solid var(--border); border-radius: 7px; overflow: hidden; background: var(--surface); }
+.seg button { background: none; border: 0; padding: 5px 10px; font: inherit; font-size: 13px; color: var(--text-2); cursor: pointer; border-right: 1px solid var(--border); }
+.seg button:last-child { border-right: 0; }
+.seg button[aria-pressed="true"] { background: var(--surface-2); color: var(--text); font-weight: 600; }
+select, input[type="date"] {
+  background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; font: inherit; font-size: 13px;
+}
+.panel { display: none; }
+.panel.active { display: block; }
+.grid { display: grid; gap: 14px; }
+.kpis { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+.two { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); }
+.half { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; min-width: 0; }
+.card h2 { font-size: 14px; margin: 0 0 2px; font-weight: 600; }
+.card .note { color: var(--text-3); font-size: 12px; margin: 0 0 8px; }
+.kpi .label { color: var(--text-2); font-size: 12px; }
+.kpi .value { font-size: 24px; font-weight: 650; letter-spacing: -0.01em; margin: 2px 0; font-variant-numeric: tabular-nums; }
+.kpi .delta { font-size: 12px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+.delta .up { color: var(--good-text); } .delta .down { color: var(--critical-text); }
+.flag { display: inline-block; font-size: 11px; color: var(--text-2); background: var(--surface-2); border-radius: 4px; padding: 0 5px; margin-left: 4px; }
+.chart { width: 100%; height: 320px; }
+.chart.tall { height: 380px; }
+.chart.short { height: 260px; }
+.metric-switch { margin: 6px 0 4px; flex-wrap: wrap; }
+.seg button { white-space: nowrap; }
+.table-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; font-variant-numeric: tabular-nums; }
+th, td { text-align: right; padding: 6px 8px; border-bottom: 1px solid var(--grid); white-space: nowrap; }
+th { color: var(--text-2); font-weight: 500; font-size: 12px; }
+th:first-child, td:first-child { text-align: left; }
+td.left, th.left { text-align: left; white-space: normal; }
+.legend-inline { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--text-2); margin: 2px 0 6px; }
+.legend-inline span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; background: var(--c); }
+.callout { background: var(--surface-2); border-radius: 8px; padding: 10px 12px; font-size: 13px; color: var(--text-2); margin-top: 10px; }
+.callout b { color: var(--text); }
+.status { font-size: 12px; white-space: nowrap; }
+.status::before { display: inline-block; width: 16px; text-align: center; margin-right: 4px; font-weight: 700; }
+.status.PASS::before { content: "✓"; color: var(--good); }
+.status.WARN::before { content: "!"; color: var(--warning); }
+.status.FAIL::before { content: "✕"; color: var(--critical); }
+.dq-count { display: flex; gap: 18px; flex-wrap: wrap; }
+.dq-count div { font-size: 13px; color: var(--text-2); }
+.dq-count b { font-size: 22px; color: var(--text); margin-right: 4px; }
+#dqTable td:nth-child(1), #dqTable td:nth-child(3) { white-space: nowrap; }
+#dqTable td:nth-child(2) { min-width: 13em; }
+#dqTable td:nth-child(4) { min-width: 22em; }
+footer { margin-top: 28px; color: var(--text-3); font-size: 12px; line-height: 1.7; }
+.loading { color: var(--text-3); padding: 40px 0; text-align: center; }
+@media (max-width: 1000px) {
+  .kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .two, .half { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 560px) {
+  .wrap { padding: 16px 16px 40px; }
+  .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .kpi .value { font-size: 20px; }
+  .chart { height: 280px; }
+  h1 { font-size: 19px; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>电商用户指标看板</h1>
+      <div class="sub" id="subtitle">海外多品类电商 · 2019-10-01 ~ 2019-11-30 · 本地时间 UTC+3</div>
+    </div>
+    <div class="links">
+      <a href="https://github.com/siruitan920/ecommerce-lifecycle-analytics">项目仓库</a>
+      <a href="https://github.com/siruitan920/ecommerce-lifecycle-analytics/blob/main/docs/metrics_system.md">指标口径</a>
+      <a href="https://github.com/siruitan920/ecommerce-lifecycle-analytics/tree/main/notebooks">分析 notebook</a>
+      <button class="theme-btn" id="themeBtn" type="button">深色</button>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button role="tab" data-tab="overview" aria-selected="true">总览</button>
+    <button role="tab" data-tab="attribution" aria-selected="false">异常归因</button>
+    <button role="tab" data-tab="funnel" aria-selected="false">漏斗与品类</button>
+    <button role="tab" data-tab="retention" aria-selected="false">留存</button>
+    <button role="tab" data-tab="lifecycle" aria-selected="false">生命周期</button>
+    <button role="tab" data-tab="quality" aria-selected="false">数据质量</button>
+  </nav>
+
+  <div class="filters" id="filters">
+    <span class="seg" id="rangeSeg">
+      <button data-range="all" aria-pressed="true">全部</button>
+      <button data-range="oct" aria-pressed="false">10 月</button>
+      <button data-range="nov" aria-pressed="false">11 月</button>
+      <button data-range="pre" aria-pressed="false">大促前</button>
+    </span>
+    <label>从 <input type="date" id="dStart" min="2019-10-01" max="2019-11-30" value="2019-10-01"></label>
+    <label>到 <input type="date" id="dEnd" min="2019-10-01" max="2019-11-30" value="2019-11-30"></label>
+    <label id="catLabel">品类 <select id="cat"><option value="">全部品类</option></select></label>
+  </div>
+
+  <div id="app" class="loading">加载数据…</div>
+
+  <section class="panel active" id="p-overview">
+    <div class="grid kpis" id="kpis"></div>
+    <div class="grid two" style="margin-top:14px">
+      <div class="card">
+        <h2 id="trendTitle">每日趋势</h2>
+        <p class="note">灰色 = 购买埋点缺失（11-15、11-16），浅色带 = 大促（11-15 ~ 11-17）</p>
+        <div class="seg metric-switch" id="metricSeg"></div>
+        <div class="chart" id="trendChart"></div>
+      </div>
+      <div class="card">
+        <h2>活跃用户规模</h2>
+        <p class="note">DAU / WAU / MAU，WAU 从 10-07、MAU 从 10-30 起完整</p>
+        <div class="chart" id="auChart"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="p-attribution">
+    <div class="card">
+      <h2>GMV 的每日变化拆解</h2>
+      <p class="note">GMV = DAU × 下单转化率 × 人均订单 × 客单价。每个因子与过去 10 天的平日均值比，取对数后四项正好加总为 GMV 的变化（0.1 ≈ 10%）。点任意一天看拆解。</p>
+      <div class="legend-inline" id="attrLegend"></div>
+      <div class="chart tall" id="attrChart"></div>
+      <div class="callout" id="attrDetail">点击图上的某一天查看拆解。</div>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <h2>异常日（GMV 偏离基线超过 ±15%）</h2>
+      <p class="note">按所选日期范围筛选；埋点缺失的两天不参与归因</p>
+      <div class="table-wrap"><table id="attrTable"></table></div>
+    </div>
+  </section>
+
+  <section class="panel" id="p-funnel">
+    <div class="grid half">
+      <div class="card">
+        <h2>转化漏斗</h2>
+        <p class="note" id="funnelNote">用户·日口径：同一用户在不同日期分别计数；不含购买埋点缺失的两天</p>
+        <div class="chart short" id="funnelChart"></div>
+      </div>
+      <div class="card">
+        <h2>品类 GMV 占比</h2>
+        <p class="note">一级品类，前 7 个之外合并为「其他」</p>
+        <div class="chart short" id="catChart"></div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <h2>品类表现</h2>
+      <p class="note">所选日期范围内；转化率不含埋点缺失的两天；环比 = 与前一个同长度时段相比</p>
+      <div class="table-wrap"><table id="catTable"></table></div>
+    </div>
+  </section>
+
+  <section class="panel" id="p-retention">
+    <div class="card">
+      <h2>新用户留存（按首次出现的周分 cohort）</h2>
+      <p class="note">10 月初的 cohort 混有 9 月就来过的老用户（窗口左截断），读数偏高；只显示观察期完整的格子</p>
+      <div class="seg metric-switch" id="retSeg">
+        <button data-ret="within" aria-pressed="true">N 天内回访率</button>
+        <button data-ret="on" aria-pressed="false">第 N 天留存</button>
+      </div>
+      <div class="chart tall" id="retChart"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="p-lifecycle">
+    <div class="card">
+      <h2>生命周期结构的每日变化</h2>
+      <p class="note">每天站在当天分层：新用户 = 7 天内首次出现；健康 = 7 天内来过；早期风险 = 沉默 8–14 天；加速流失 = 15–30 天；长期沉默 = 30 天以上</p>
+      <div class="chart tall" id="lcChart"></div>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <h2>11-30 快照</h2>
+      <p class="note">高价值风险用户 = 早期风险层和加速流失层中，各自历史事件数前 30% 的用户</p>
+      <div class="table-wrap"><table id="lcTable"></table></div>
+    </div>
+  </section>
+
+  <section class="panel" id="p-quality">
+    <div class="grid two">
+      <div class="card">
+        <h2>购买事件小时监控</h2>
+        <p class="note">每小时 purchase 事件数与上周同一小时之比（对数轴，超过 10× 截断显示）；低于 0.3× 告警。灰色 = 购买为 0 的 48 个小时（埋点中断）。</p>
+        <div class="chart" id="hourChart"></div>
+      </div>
+      <div class="card">
+        <h2>自动化检查</h2>
+        <p class="note">由 pipeline/quality_checks.py 生成</p>
+        <div class="dq-count" id="dqCount"></div>
+        <div class="callout"><b>最大的数据问题：</b>本地 11-14 22:00 ~ 11-16 10:59、11-16 19:00 ~ 11-17 05:59 购买事件丢失（不是延迟上报），浏览和加购正常。11-15、11-16 的 GMV、转化率不能用；大促前段「只加购不下单」是数据缺失造成的假象。<a href="https://github.com/siruitan920/ecommerce-lifecycle-analytics/blob/main/notebooks/01_data_quality_and_pipeline.ipynb">定位过程</a></div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <h2>检查明细</h2>
+      <div class="table-wrap"><table id="dqTable"></table></div>
+    </div>
+  </section>
+
+  <footer>
+    数据来源：Kaggle <a href="https://www.kaggle.com/datasets/mkechinov/ecommerce-behavior-data-from-multi-category-store">eCommerce behavior data from multi category store</a>，
+    由 <a href="https://rees46.com">REES46 Marketing Platform</a> 提供。金额为数据集原始价格单位（未注明币种）。
+    本看板为个人分析作品，<span id="genDate"></span>
+  </footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
+<script>
+(() => {
+  "use strict";
+  const STAGES = ["new", "healthy", "early_risk", "accelerating", "long_lapsed"];
+  const STAGE_CN = { new: "新用户", healthy: "健康", early_risk: "早期风险", accelerating: "加速流失", long_lapsed: "长期沉默" };
+  const CAT_CN = { electronics: "电子", appliances: "家电", computers: "电脑", unknown: "未分类", furniture: "家具", auto: "汽车用品",
+    construction: "建材工具", apparel: "服饰鞋包", kids: "母婴玩具", sport: "运动", accessories: "配饰", medicine: "医药",
+    country_yard: "庭院", stationery: "文具" };
+  const OUTAGE = ["2019-11-15", "2019-11-16"];
+  const CAMPAIGN = ["2019-11-15", "2019-11-17"];
+  const state = { tab: "overview", start: "2019-10-01", end: "2019-11-30", cat: "", metric: null, ret: "within", selDay: null };
+  let D = null;
+  const charts = {};
+
+  // ---------- utils ----------
+  const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  const series = () => [1, 2, 3, 4, 5, 6, 7, 8].map((i) => css(`--s${i}`));
+  const $ = (id) => document.getElementById(id);
+  const sum = (a, f) => a.reduce((s, r) => s + (f(r) || 0), 0);
+  const fmtInt = (v) => v == null ? "—" : Math.round(v).toLocaleString("zh-CN");
+  const fmtBig = (v) => {
+    if (v == null || isNaN(v)) return "—";
+    const a = Math.abs(v);
+    if (a >= 1e8) return (v / 1e8).toFixed(2) + " 亿";
+    if (a >= 1e4) return (v / 1e4).toFixed(a >= 1e6 ? 0 : 1) + " 万";
+    return Math.round(v).toLocaleString("zh-CN");
+  };
+  const fmtPct = (v, d = 1) => v == null || isNaN(v) ? "—" : (v * 100).toFixed(d) + "%";
+  const fmtNum = (v, d = 1) => v == null || isNaN(v) ? "—" : v.toFixed(d);
+  const inRange = (date) => date >= state.start && date <= state.end;
+  const isOutage = (date) => OUTAGE.includes(date);
+  const daysBetween = (a, b) => Math.round((new Date(b) - new Date(a)) / 864e5) + 1;
+  const shiftDate = (s, n) => { const d = new Date(s + "T00:00:00Z"); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
+  const catName = (c) => CAT_CN[c] ? `${CAT_CN[c]}（${c}）` : c;
+
+  function baseOption() {
+    const t = css("--text-2"), g = css("--grid");
+    return {
+      backgroundColor: "transparent",
+      textStyle: { color: t, fontFamily: getComputedStyle(document.body).fontFamily },
+      grid: { left: 8, right: 16, top: 16, bottom: 8, containLabel: true },
+      tooltip: {
+        backgroundColor: css("--surface"), borderColor: css("--border"), textStyle: { color: css("--text"), fontSize: 12 },
+        extraCssText: "box-shadow: 0 4px 14px rgba(0,0,0,.12); border-radius: 8px;",
+      },
+      xAxis: { axisLine: { lineStyle: { color: g } }, axisTick: { show: false }, axisLabel: { color: css("--text-3") }, splitLine: { show: false } },
+      yAxis: { axisLine: { show: false }, axisLabel: { color: css("--text-3") }, splitLine: { lineStyle: { color: g } } },
+    };
+  }
+  function chart(id) {
+    const el = $(id);
+    if (!charts[id]) {
+      charts[id] = echarts.init(el, null, { renderer: "canvas" });
+    }
+    return charts[id];
+  }
+  const shadeAreas = () => ({
+    silent: true,
+    data: [
+      [{ xAxis: CAMPAIGN[0], itemStyle: { color: css("--shade") } }, { xAxis: CAMPAIGN[1] }],
+    ],
+  });
+
+  // ---------- data ----------
+  async function load() {
+    const names = ["daily", "category_daily", "retention", "lifecycle", "hourly", "dq", "meta"];
+    const res = await Promise.all(names.map((n) => fetch(`data/${n}.json`).then((r) => { if (!r.ok) throw new Error(n); return r.json(); })));
+    D = Object.fromEntries(names.map((n, i) => [n, res[i]]));
+    const cats = {};
+    D.category_daily.forEach((r) => { cats[r.category_l1] = (cats[r.category_l1] || 0) + r.gmv; });
+    D.cats = Object.keys(cats).sort((a, b) => cats[b] - cats[a]);
+    const sel = $("cat");
+    D.cats.forEach((c) => { const o = document.createElement("option"); o.value = c; o.textContent = catName(c); sel.appendChild(o); });
+    $("genDate").textContent = `数据生成于 ${D.meta.generated}。`;
+    $("app").remove();
+  }
+
+  // ---------- overview ----------
+  const METRICS_ALL = [
+    { key: "gmv", label: "GMV", fmt: fmtBig, purchase: true },
+    { key: "dau", label: "DAU", fmt: fmtBig },
+    { key: "conv", label: "下单转化率", fmt: (v) => fmtPct(v, 2), purchase: true, calc: (r) => r.buyers / r.dau },
+    { key: "aov", label: "客单价", fmt: (v) => fmtNum(v, 0), purchase: true, calc: (r) => r.gmv / r.orders },
+    { key: "orders", label: "订单数", fmt: fmtBig, purchase: true },
+    { key: "new_users", label: "新用户", fmt: fmtBig },
+  ];
+  const METRICS_CAT = [
+    { key: "gmv", label: "GMV", fmt: fmtBig, purchase: true },
+    { key: "active_users", label: "品类活跃用户", fmt: fmtBig },
+    { key: "conv", label: "品类下单转化率", fmt: (v) => fmtPct(v, 2), purchase: true, calc: (r) => r.buyers / r.active_users },
+    { key: "price", label: "件均价", fmt: (v) => fmtNum(v, 0), purchase: true, calc: (r) => r.gmv / r.purchase_items },
+    { key: "purchase_items", label: "购买件数", fmt: fmtBig, purchase: true },
+  ];
+  function rowsFor(start, end) {
+    if (!state.cat) return D.daily.filter((r) => r.event_date >= start && r.event_date <= end);
+    return D.category_daily.filter((r) => r.category_l1 === state.cat && r.event_date >= start && r.event_date <= end);
+  }
+  function kpiValues(rows) {
+    const ok = rows.filter((r) => !isOutage(r.event_date));
+    if (!state.cat) {
+      return {
+        gmv: sum(rows, (r) => r.gmv), orders: sum(rows, (r) => r.orders),
+        dau: rows.length ? sum(rows, (r) => r.dau) / rows.length : null,
+        conv: sum(ok, (r) => r.buyers) / sum(ok, (r) => r.dau),
+        aov: sum(ok, (r) => r.gmv) / sum(ok, (r) => r.orders),
+        new_users: sum(rows, (r) => r.new_users),
+      };
+    }
+    return {
+      gmv: sum(rows, (r) => r.gmv), items: sum(rows, (r) => r.purchase_items),
+      active: rows.length ? sum(rows, (r) => r.active_users) / rows.length : null,
+      conv: sum(ok, (r) => r.buyers) / sum(ok, (r) => r.active_users),
+      price: sum(ok, (r) => r.gmv) / sum(ok, (r) => r.purchase_items),
+      v2c: sum(ok, (r) => r.cart_users) / sum(ok, (r) => r.view_users),
+    };
+  }
+  function renderKpis() {
+    const rows = rowsFor(state.start, state.end);
+    const len = daysBetween(state.start, state.end);
+    const pStart = shiftDate(state.start, -len), pEnd = shiftDate(state.start, -1);
+    const hasPrev = pStart >= "2019-10-01";
+    const prev = hasPrev ? kpiValues(rowsFor(pStart, pEnd)) : null;
+    const cur = kpiValues(rows);
+    const touchesOutage = rows.some((r) => isOutage(r.event_date));
+    const defs = !state.cat ? [
+      ["GMV", "gmv", fmtBig, touchesOutage ? "含埋点缺失日，偏低" : ""],
+      ["订单数", "orders", fmtBig, touchesOutage ? "含埋点缺失日，偏低" : ""],
+      ["日均 DAU", "dau", fmtBig, ""],
+      ["下单转化率", "conv", (v) => fmtPct(v, 2), "下单用户 / DAU"],
+      ["客单价", "aov", (v) => fmtNum(v, 0), "GMV / 订单数"],
+      ["新用户", "new_users", fmtBig, "窗口内首次出现"],
+    ] : [
+      ["品类 GMV", "gmv", fmtBig, touchesOutage ? "含埋点缺失日，偏低" : ""],
+      ["购买件数", "items", fmtBig, ""],
+      ["日均品类活跃用户", "active", fmtBig, ""],
+      ["品类下单转化率", "conv", (v) => fmtPct(v, 2), "下单用户 / 活跃用户"],
+      ["件均价", "price", (v) => fmtNum(v, 0), "GMV / 件数"],
+      ["浏览→加购", "v2c", (v) => fmtPct(v, 1), "用户·日"],
+    ];
+    $("kpis").innerHTML = defs.map(([label, k, f, note]) => {
+      let delta = "无可比时段";
+      if (prev && prev[k]) {
+        const ch = cur[k] / prev[k] - 1;
+        const cls = ch >= 0 ? "up" : "down";
+        delta = `<span class="${cls}">${ch >= 0 ? "▲" : "▼"} ${fmtPct(Math.abs(ch), 1)}</span> 较前 ${len} 天`;
+      }
+      return `<div class="card kpi"><div class="label">${label}${note ? `<span class="flag">${note}</span>` : ""}</div>
+        <div class="value">${f(cur[k])}</div><div class="delta">${delta}</div></div>`;
+    }).join("");
+  }
+  function renderMetricSeg() {
+    const list = state.cat ? METRICS_CAT : METRICS_ALL;
+    if (!list.find((m) => m.key === state.metric)) state.metric = "gmv";
+    $("metricSeg").innerHTML = list.map((m) => `<button data-metric="${m.key}" aria-pressed="${m.key === state.metric}">${m.label}</button>`).join("");
+  }
+  function renderTrend() {
+    const list = state.cat ? METRICS_CAT : METRICS_ALL;
+    const m = list.find((x) => x.key === state.metric);
+    const rows = rowsFor(state.start, state.end);
+    const val = (r) => m.calc ? m.calc(r) : r[m.key];
+    const data = rows.map((r) => [r.event_date, m.purchase && isOutage(r.event_date) ? null : val(r)]);
+    $("trendTitle").textContent = `每日${m.label}${state.cat ? " · " + catName(state.cat) : ""}`;
+    const o = baseOption();
+    const outageMarks = rows.filter((r) => isOutage(r.event_date)).map((r) => [{ xAxis: r.event_date, itemStyle: { color: css("--shade") } }, { xAxis: r.event_date }]);
+    Object.assign(o, {
+      tooltip: { ...o.tooltip, trigger: "axis", axisPointer: { type: "line", lineStyle: { color: css("--text-3") } },
+        formatter: (ps) => { const p = ps[0]; const miss = m.purchase && isOutage(p.axisValue);
+          return `${p.axisValue}<br>${m.label}：<b>${miss ? "埋点缺失" : m.fmt(p.data[1])}</b>`; } },
+      xAxis: { ...o.xAxis, type: "category", data: rows.map((r) => r.event_date), axisLabel: { ...o.xAxis.axisLabel, formatter: (v) => v.slice(5) } },
+      yAxis: { ...o.yAxis, type: "value", scale: m.key !== "gmv" && m.key !== "orders", axisLabel: { ...o.yAxis.axisLabel, formatter: (v) => m.key === "conv" ? fmtPct(v, 0) : fmtBig(v) } },
+      series: [{
+        type: "line", data, showSymbol: false, symbolSize: 8, connectNulls: false, lineStyle: { width: 2, color: series()[0] }, itemStyle: { color: series()[0] },
+        markArea: { silent: true, data: [
+          [{ xAxis: CAMPAIGN[0], itemStyle: { color: css("--shade") } }, { xAxis: CAMPAIGN[1] }],
+          ...(m.purchase ? outageMarks : []),
+        ].filter((a) => inRange(a[0].xAxis) || inRange(a[1].xAxis)) },
+      }],
+    });
+    chart("trendChart").setOption(o, true);
+  }
+  function renderAU() {
+    const rows = D.daily.filter((r) => inRange(r.event_date));
+    const c = series();
+    const o = baseOption();
+    const lines = [["MAU（近 30 天）", "mau", "mau_complete", c[2]], ["WAU（近 7 天）", "wau", "wau_complete", c[1]], ["DAU", "dau", null, c[0]]];
+    Object.assign(o, {
+      legend: { top: 0, left: 0, itemWidth: 14, itemHeight: 8, textStyle: { color: css("--text-2"), fontSize: 12 } },
+      grid: { ...o.grid, top: 30 },
+      tooltip: { ...o.tooltip, trigger: "axis", valueFormatter: fmtBig },
+      xAxis: { ...o.xAxis, type: "category", data: rows.map((r) => r.event_date), axisLabel: { ...o.xAxis.axisLabel, formatter: (v) => v.slice(5) } },
+      yAxis: { ...o.yAxis, type: "value", axisLabel: { ...o.yAxis.axisLabel, formatter: fmtBig } },
+      series: lines.map(([name, k, comp, color]) => ({
+        name, type: "line", showSymbol: false, data: rows.map((r) => comp && !r[comp] ? null : r[k]),
+        lineStyle: { width: 2, color }, itemStyle: { color },
+      })),
+    });
+    chart("auChart").setOption(o, true);
+    $("catLabel").title = "";
+  }
+
+  // ---------- attribution ----------
+  const FACTORS = [["c_dau", "DAU"], ["c_buyer_conversion", "下单转化率"], ["c_orders_per_buyer", "人均订单"], ["c_aov", "客单价"]];
+  function renderAttribution() {
+    const rows = D.daily.filter((r) => inRange(r.event_date) && r.gmv_base);
+    const c = series();
+    $("attrLegend").innerHTML = FACTORS.map(([, n], i) => `<span style="--c:${c[i]}">${n}</span>`).join("") + `<span style="--c:${css("--text")}">GMV 总变化</span>`;
+    const o = baseOption();
+    const th = Math.log(1.15);
+    Object.assign(o, {
+      tooltip: { ...o.tooltip, trigger: "axis", axisPointer: { type: "shadow", shadowStyle: { color: css("--shade") } },
+        formatter: (ps) => {
+          const r = rows[ps[0].dataIndex];
+          if (isOutage(r.event_date)) return `${r.event_date}<br>购买埋点缺失，不参与归因`;
+          return `${r.event_date}<br>GMV 变化 <b>${fmtPct(Math.exp(r.log_change) - 1, 0)}</b><br>` +
+            FACTORS.map(([k, n]) => `${n}：${r[k] >= 0 ? "+" : ""}${fmtNum(r[k], 3)}`).join("<br>");
+        } },
+      xAxis: { ...o.xAxis, type: "category", data: rows.map((r) => r.event_date), axisLabel: { ...o.xAxis.axisLabel, formatter: (v) => v.slice(5) } },
+      grid: { ...o.grid, right: 48 },
+      yAxis: { ...o.yAxis, type: "value", name: "对数贡献", nameTextStyle: { color: css("--text-3"), fontSize: 11 } },
+      series: [
+        ...FACTORS.map(([k, n], i) => ({
+          name: n, type: "bar", stack: "c", barMaxWidth: 14, data: rows.map((r) => r[k] == null || isOutage(r.event_date) ? null : r[k]),
+          itemStyle: { color: c[i], borderColor: css("--surface"), borderWidth: 1 },
+        })),
+        { name: "GMV 总变化", type: "scatter", symbolSize: 7, z: 5, data: rows.map((r) => r.log_change),
+          itemStyle: { color: css("--text"), borderColor: css("--surface"), borderWidth: 1.5 },
+          markLine: { silent: true, symbol: "none", lineStyle: { color: css("--text-3"), type: "solid", width: 1 },
+            label: { color: css("--text-3"), fontSize: 11, formatter: (p) => p.value > 0 ? "+15%" : "-15%" },
+            data: [{ yAxis: th }, { yAxis: -th }] } },
+      ],
+    });
+    const ch = chart("attrChart");
+    ch.setOption(o, true);
+    ch.off("click");
+    ch.on("click", (p) => { state.selDay = rows[p.dataIndex].event_date; renderAttrDetail(); });
+    ch.getZr().off("click");
+    ch.getZr().on("click", (e) => {
+      const pt = [e.offsetX, e.offsetY];
+      if (!ch.containPixel("grid", pt)) return;
+      const idx = ch.convertFromPixel({ seriesIndex: 0 }, pt)[0];
+      if (rows[idx]) { state.selDay = rows[idx].event_date; renderAttrDetail(); }
+    });
+    if (!state.selDay || !inRange(state.selDay)) {
+      const flagged = rows.filter((r) => r.log_change != null && Math.abs(r.log_change) > th);
+      state.selDay = flagged.length ? flagged.reduce((a, b) => Math.abs(b.log_change) > Math.abs(a.log_change) ? b : a).event_date : rows[rows.length - 1]?.event_date;
+    }
+    renderAttrDetail();
+    const flagged = rows.filter((r) => r.log_change != null && Math.abs(r.log_change) > th);
+    $("attrTable").innerHTML = `<thead><tr><th>日期</th><th>GMV</th><th>基线</th><th>变化</th>${FACTORS.map(([, n]) => `<th>${n}</th>`).join("")}<th class="left">主要驱动</th></tr></thead><tbody>` +
+      (flagged.length ? flagged.map((r) => {
+        const top = FACTORS.reduce((a, b) => Math.abs(r[b[0]]) > Math.abs(r[a[0]]) ? b : a);
+        return `<tr><td>${r.event_date}</td><td>${fmtBig(r.gmv)}</td><td>${fmtBig(r.gmv_base)}</td><td>${fmtPct(Math.exp(r.log_change) - 1, 0)}</td>` +
+          FACTORS.map(([k]) => `<td>${r[k] >= 0 ? "+" : ""}${fmtNum(r[k], 3)}</td>`).join("") + `<td class="left">${top[1]}</td></tr>`;
+      }).join("") : `<tr><td colspan="9" class="left">所选范围内没有偏离超过 ±15% 的日子</td></tr>`) + "</tbody>";
+  }
+  function renderAttrDetail() {
+    const r = D.daily.find((x) => x.event_date === state.selDay);
+    if (!r) return;
+    if (isOutage(r.event_date)) {
+      $("attrDetail").innerHTML = `<b>${r.event_date}</b>：DAU ${fmtBig(r.dau)}，但这一天的购买事件有 ${r.event_date === "2019-11-15" ? "全天" : "约 16 小时"}没有采集到（埋点中断，见「数据质量」页）。GMV 和转化率不反映业务真实情况，不做归因。`;
+      return;
+    }
+    if (r.log_change == null) { $("attrDetail").textContent = `${r.event_date}：基线不足（窗口前 5 天），不做归因。`; return; }
+    const parts = FACTORS.map(([k, n]) => [n, r[k]]).sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]));
+    const share = parts.map(([n, v]) => `${n} ${v >= 0 ? "+" : ""}${fmtPct(Math.exp(v) - 1, 1)}`).join("，");
+    $("attrDetail").innerHTML = `<b>${r.event_date}</b>：GMV ${fmtBig(r.gmv)}，基线 ${fmtBig(r.gmv_base)}，变化 <b>${fmtPct(Math.exp(r.log_change) - 1, 1)}</b>。` +
+      `四个因子相对基线：${share}。主要由<b>${parts[0][0]}</b>驱动。`;
+  }
+
+  // ---------- funnel & categories ----------
+  function renderFunnel() {
+    const rows = rowsFor(state.start, state.end).filter((r) => !isOutage(r.event_date));
+    const v = sum(rows, (r) => r.view_users), c = sum(rows, (r) => r.cart_users), b = sum(rows, (r) => r.buyers);
+    const steps = [["浏览", v], ["加购", c], ["下单", b]];
+    const col = series()[0];
+    const o = baseOption();
+    Object.assign(o, {
+      grid: { left: 8, right: 120, top: 10, bottom: 10, containLabel: true },
+      tooltip: { ...o.tooltip, trigger: "item", formatter: (p) => `${p.name}：${fmtInt(p.value)} 用户·日` },
+      xAxis: { ...o.xAxis, type: "value", show: false },
+      yAxis: { ...o.yAxis, type: "category", inverse: true, data: steps.map((s) => s[0]), splitLine: { show: false }, axisTick: { show: false }, axisLine: { show: false }, axisLabel: { color: css("--text-2"), fontSize: 13 } },
+      series: [{ type: "bar", barWidth: 26, data: steps.map((s) => s[1]), itemStyle: { color: col, borderRadius: [0, 4, 4, 0] },
+        label: { show: true, position: "right", color: css("--text-2"), fontSize: 12,
+          formatter: (p) => p.dataIndex === 0 ? fmtBig(p.value) : `${fmtBig(p.value)}  ·  ${fmtPct(p.value / steps[p.dataIndex - 1][1], 1)}` } }],
+    });
+    chart("funnelChart").setOption(o, true);
+    $("funnelNote").textContent = `用户·日口径（同一用户不同日期分别计数）${state.cat ? "，品类：" + catName(state.cat) : ""}；不含购买埋点缺失的两天。右侧百分比为相对上一步的转化。`;
+  }
+  function catAgg(start, end) {
+    const out = {};
+    D.category_daily.forEach((r) => {
+      if (r.event_date < start || r.event_date > end) return;
+      const o = out[r.category_l1] ||= { gmv: 0, items: 0, vu: 0, cu: 0, bu: 0, au: 0, gmv_ok: 0, items_ok: 0 };
+      o.gmv += r.gmv; o.items += r.purchase_items;
+      if (!isOutage(r.event_date)) { o.vu += r.view_users; o.cu += r.cart_users; o.bu += r.buyers; o.au += r.active_users; o.gmv_ok += r.gmv; o.items_ok += r.purchase_items; }
+    });
+    return out;
+  }
+  function renderCategories() {
+    const cur = catAgg(state.start, state.end);
+    const len = daysBetween(state.start, state.end);
+    const pStart = shiftDate(state.start, -len), pEnd = shiftDate(state.start, -1);
+    const prev = pStart >= "2019-10-01" ? catAgg(pStart, pEnd) : null;
+    const total = Object.values(cur).reduce((s, o) => s + o.gmv, 0);
+    const cats = Object.keys(cur).sort((a, b) => cur[b].gmv - cur[a].gmv);
+    $("catTable").innerHTML = `<thead><tr><th>品类</th><th>GMV</th><th>占比</th><th>环比</th><th>购买件数</th><th>件均价</th><th>浏览→加购</th><th>加购→下单</th><th>活跃→下单</th></tr></thead><tbody>` +
+      cats.map((k) => {
+        const o = cur[k]; const p = prev && prev[k];
+        const g = p && p.gmv ? o.gmv / p.gmv - 1 : null;
+        return `<tr${state.cat === k ? ' style="font-weight:600"' : ""}><td>${catName(k)}</td><td>${fmtBig(o.gmv)}</td><td>${fmtPct(o.gmv / total, 1)}</td>` +
+          `<td>${g == null ? "—" : `<span class="${g >= 0 ? "up" : "down"}" style="color:var(${g >= 0 ? "--good-text" : "--critical-text"})">${g >= 0 ? "+" : ""}${fmtPct(g, 0)}</span>`}</td>` +
+          `<td>${fmtInt(o.items)}</td><td>${fmtNum(o.gmv_ok / o.items_ok, 0)}</td><td>${fmtPct(o.cu / o.vu)}</td><td>${fmtPct(o.bu / o.cu)}</td><td>${fmtPct(o.bu / o.au, 2)}</td></tr>`;
+      }).join("") + "</tbody>";
+    const top = cats.slice(0, 7);
+    const other = cats.slice(7).reduce((s, k) => s + cur[k].gmv, 0);
+    const data = top.map((k) => ({ name: CAT_CN[k] || k, value: cur[k].gmv })).concat(other > 0 ? [{ name: "其他", value: other }] : []);
+    const o = baseOption();
+    const col = series()[0];
+    Object.assign(o, {
+      grid: { left: 8, right: 70, top: 6, bottom: 6, containLabel: true },
+      tooltip: { ...o.tooltip, trigger: "item", formatter: (p) => `${p.name}：${fmtBig(p.value)}（${fmtPct(p.value / total, 1)}）` },
+      xAxis: { ...o.xAxis, type: "value", show: false },
+      yAxis: { ...o.yAxis, type: "category", inverse: true, data: data.map((d) => d.name), splitLine: { show: false }, axisTick: { show: false }, axisLine: { show: false }, axisLabel: { color: css("--text-2") } },
+      series: [{ type: "bar", barWidth: 14, data: data.map((d) => ({ value: d.value, itemStyle: { color: (state.cat && CAT_CN[state.cat] !== d.name && state.cat !== d.name) ? css("--grid") : col } })),
+        itemStyle: { borderRadius: [0, 4, 4, 0] },
+        label: { show: true, position: "right", color: css("--text-2"), fontSize: 11, formatter: (p) => fmtPct(p.value / total, 1) } }],
+    });
+    chart("catChart").setOption(o, true);
+  }
+
+  // ---------- retention ----------
+  function renderRetention() {
+    const weeks = [...new Set(D.retention.map((r) => r.cohort_week))].sort();
+    const days = Array.from({ length: 30 }, (_, i) => i + 1);
+    const key = state.ret === "within" ? "within_n" : "retained";
+    const data = D.retention.map((r) => [r.day_n - 1, weeks.indexOf(r.cohort_week), r[key] / r.cohort_size]);
+    const max = state.ret === "within" ? 0.6 : 0.16;
+    const size = Object.fromEntries(D.retention.filter((r) => r.day_n === 1).map((r) => [r.cohort_week, r.cohort_size]));
+    const o = baseOption();
+    Object.assign(o, {
+      grid: { left: 8, right: 16, top: 10, bottom: 50, containLabel: true },
+      tooltip: { ...o.tooltip, trigger: "item", formatter: (p) => `${weeks[p.data[1]].slice(5)} 当周 cohort（${fmtInt(size[weeks[p.data[1]]])} 人）<br>` +
+        `${state.ret === "within" ? `${p.data[0] + 1} 天内回访` : `第 ${p.data[0] + 1} 天留存`}：<b>${fmtPct(p.data[2], 1)}</b>` },
+      xAxis: { ...o.xAxis, type: "category", data: days, name: "第 N 天", nameLocation: "middle", nameGap: 24, nameTextStyle: { color: css("--text-3") }, splitArea: { show: false } },
+      yAxis: { ...o.yAxis, type: "category", data: weeks.map((w) => w.slice(5) + " 当周"), inverse: true, splitLine: { show: false } },
+      visualMap: { min: 0, max, calculable: false, orient: "horizontal", left: "center", bottom: 0, itemWidth: 12, itemHeight: 160,
+        text: [fmtPct(max, 0), "0%"], textStyle: { color: css("--text-3"), fontSize: 11 },
+        inRange: { color: [0, 1, 2, 3, 4, 5, 6].map((i) => css(`--seq-${i}`)) } },
+      series: [{ type: "heatmap", data, itemStyle: { borderColor: css("--surface"), borderWidth: 1.5 }, emphasis: { itemStyle: { borderColor: css("--text"), borderWidth: 1 } } }],
+    });
+    chart("retChart").setOption(o, true);
+  }
+
+  // ---------- lifecycle ----------
+  function renderLifecycle() {
+    const rows = D.lifecycle.daily.filter((r) => r.snapshot_date >= state.start && r.snapshot_date <= state.end);
+    const dates = [...new Set(rows.map((r) => r.snapshot_date))];
+    const c = series();
+    const o = baseOption();
+    Object.assign(o, {
+      legend: { top: 0, left: 0, itemWidth: 14, itemHeight: 8, textStyle: { color: css("--text-2"), fontSize: 12 } },
+      grid: { ...o.grid, top: 32, right: 70 },
+      tooltip: { ...o.tooltip, trigger: "axis", valueFormatter: (v) => fmtPct(v, 1) },
+      xAxis: { ...o.xAxis, type: "category", data: dates, axisLabel: { ...o.xAxis.axisLabel, formatter: (v) => v.slice(5) } },
+      yAxis: { ...o.yAxis, type: "value", axisLabel: { ...o.yAxis.axisLabel, formatter: (v) => fmtPct(v, 0) } },
+      series: STAGES.map((s, i) => ({
+        name: STAGE_CN[s], type: "line", showSymbol: false,
+        data: dates.map((d) => (rows.find((r) => r.snapshot_date === d && r.stage === s) || {}).user_share ?? null),
+        lineStyle: { width: 2, color: c[i] }, itemStyle: { color: c[i] },
+        endLabel: { show: true, formatter: STAGE_CN[s], color: css("--text-2"), fontSize: 11 },
+        labelLayout: { moveOverlap: "shiftY" },
+        markArea: i === 0 ? { silent: true, data: [[{ xAxis: CAMPAIGN[0], itemStyle: { color: css("--shade") } }, { xAxis: CAMPAIGN[1] }]].filter(() => dates.includes(CAMPAIGN[0])) } : undefined,
+      })),
+    });
+    if (!dates.length) o.graphic = { type: "text", left: "center", top: "middle", style: { text: "所选范围内没有快照（快照从 10-31 开始）", fill: css("--text-3") } };
+    chart("lcChart").setOption(o, true);
+    const snap = D.lifecycle.snapshot;
+    const tu = sum(snap, (r) => r.users), tg = sum(snap, (r) => r.gmv);
+    $("lcTable").innerHTML = `<thead><tr><th>分层</th><th>用户数</th><th>用户占比</th><th>两个月 GMV 占比</th><th>人均活跃天数</th><th>活跃日人均事件</th><th>下过单的比例</th><th>其中高价值风险用户</th></tr></thead><tbody>` +
+      snap.map((r) => `<tr><td><span style="display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;background:${c[STAGES.indexOf(r.stage)]}"></span>${STAGE_CN[r.stage]}</td>` +
+        `<td>${fmtInt(r.users)}</td><td>${fmtPct(r.users / tu)}</td><td>${fmtPct(r.gmv / tg)}</td><td>${fmtNum(r.avg_active_days, 2)}</td><td>${fmtNum(r.events_per_day, 2)}</td>` +
+        `<td>${fmtPct(r.buyer_rate)}</td><td>${r.high_value_risk ? fmtInt(r.high_value_risk) : "—"}</td></tr>`).join("") + "</tbody>";
+  }
+
+  // ---------- quality ----------
+  function renderQuality() {
+    const rows = D.hourly.filter((r) => r.hour.slice(0, 10) >= state.start && r.hour.slice(0, 10) <= state.end && r.hour >= "2019-10-08");
+    const crit = css("--critical");
+    const o = baseOption();
+    Object.assign(o, {
+      tooltip: { ...o.tooltip, trigger: "axis", formatter: (ps) => { const r = rows[ps[0].dataIndex];
+        return `${r.hour}<br>购买事件：${fmtInt(r.purchases)}<br>上周同时段：${r.purchases_vs_last_week == null ? "—" : fmtNum(r.purchases_vs_last_week, 2) + " 倍"}`; } },
+      grid: { ...o.grid, right: 72 },
+      xAxis: { ...o.xAxis, type: "category", data: rows.map((r) => r.hour),
+        axisLabel: { ...o.xAxis.axisLabel, formatter: (v) => v.slice(5, 10), interval: (i, v) => v.slice(11, 13) === "00" && (new Date(v.slice(0, 10)).getUTCDay() === 1) } },
+      yAxis: { ...o.yAxis, type: "log", min: 0.01, max: 10, axisLabel: { ...o.yAxis.axisLabel, formatter: (v) => v + "×" } },
+      series: [{
+        type: "line", showSymbol: false, data: rows.map((r) => r.purchases_vs_last_week == null ? null : Math.min(10, Math.max(0.01, r.purchases_vs_last_week))),
+        lineStyle: { width: 1.2, color: series()[0] }, itemStyle: { color: series()[0] },
+        markLine: { silent: true, symbol: "none", lineStyle: { color: crit, type: "solid", width: 1 }, label: { formatter: "告警线 0.3×", color: css("--text-2"), fontSize: 11 }, data: [{ yAxis: 0.3 }] },
+        markArea: { silent: true, itemStyle: { color: css("--shade") }, data: D.meta.outage_hours.map(([a, b]) => [{ xAxis: a.slice(0, 13) + ":00" }, { xAxis: b.slice(0, 13) + ":00" }]).filter((p) => rows.some((r) => r.hour === p[0].xAxis)) },
+      }],
+    });
+    if (!rows.length) o.graphic = { type: "text", left: "center", top: "middle", style: { text: "所选范围内没有数据（从 10-08 起才有上周同时段可比）", fill: css("--text-3") } };
+    chart("hourChart").setOption(o, true);
+    const n = { PASS: 0, WARN: 0, FAIL: 0 };
+    D.dq.forEach((r) => n[r.status]++);
+    $("dqCount").innerHTML = `<div><b>${n.PASS}</b><span class="status PASS">通过</span></div><div><b>${n.WARN}</b><span class="status WARN">告警</span></div><div><b>${n.FAIL}</b><span class="status FAIL">失败</span></div>`;
+    $("dqTable").innerHTML = `<thead><tr><th class="left">类别</th><th class="left">检查项</th><th class="left">结果</th><th class="left">说明</th></tr></thead><tbody>` +
+      D.dq.map((r) => `<tr><td class="left">${r.group}</td><td class="left">${r.check}</td><td class="left"><span class="status ${r.status}">${r.status}</span></td><td class="left">${r.detail.replace(/`/g, "")}</td></tr>`).join("") + "</tbody>";
+  }
+
+  // ---------- wiring ----------
+  const RENDER = {
+    overview: () => { renderKpis(); renderMetricSeg(); renderTrend(); renderAU(); },
+    attribution: renderAttribution,
+    funnel: () => { renderFunnel(); renderCategories(); },
+    retention: renderRetention,
+    lifecycle: renderLifecycle,
+    quality: renderQuality,
+  };
+  function render() {
+    $("filters").style.display = state.tab === "retention" ? "none" : "";
+    $("catLabel").style.display = ["overview", "funnel"].includes(state.tab) ? "" : "none";
+    RENDER[state.tab]();
+    requestAnimationFrame(() => Object.values(charts).forEach((c) => c.resize()));
+  }
+  function setRange(a, b, preset) {
+    if (a > b) [a, b] = [b, a];
+    state.start = a; state.end = b;
+    $("dStart").value = a; $("dEnd").value = b;
+    document.querySelectorAll("#rangeSeg button").forEach((x) => x.setAttribute("aria-pressed", x.dataset.range === preset));
+    render();
+  }
+  function bind() {
+    document.querySelectorAll("nav.tabs button").forEach((b) => b.addEventListener("click", () => {
+      state.tab = b.dataset.tab;
+      document.querySelectorAll("nav.tabs button").forEach((x) => x.setAttribute("aria-selected", x === b));
+      document.querySelectorAll(".panel").forEach((p) => p.classList.toggle("active", p.id === "p-" + state.tab));
+      try { localStorage.setItem("dash-tab", state.tab); } catch (e) {}
+      render();
+    }));
+    const presets = { all: ["2019-10-01", "2019-11-30"], oct: ["2019-10-01", "2019-10-31"], nov: ["2019-11-01", "2019-11-30"], pre: ["2019-10-01", "2019-11-14"] };
+    document.querySelectorAll("#rangeSeg button").forEach((b) => b.addEventListener("click", () => setRange(...presets[b.dataset.range], b.dataset.range)));
+    $("dStart").addEventListener("change", () => setRange($("dStart").value || "2019-10-01", state.end, ""));
+    $("dEnd").addEventListener("change", () => setRange(state.start, $("dEnd").value || "2019-11-30", ""));
+    $("cat").addEventListener("change", () => { state.cat = $("cat").value; render(); });
+    $("metricSeg").addEventListener("click", (e) => { const k = e.target.dataset.metric; if (!k) return; state.metric = k; renderMetricSeg(); renderTrend(); });
+    $("retSeg").addEventListener("click", (e) => { const k = e.target.dataset.ret; if (!k) return; state.ret = k;
+      document.querySelectorAll("#retSeg button").forEach((x) => x.setAttribute("aria-pressed", x.dataset.ret === k)); renderRetention(); });
+    $("themeBtn").addEventListener("click", () => {
+      const dark = document.documentElement.getAttribute("data-theme") === "dark" ||
+        (!document.documentElement.getAttribute("data-theme") && matchMedia("(prefers-color-scheme: dark)").matches);
+      const next = dark ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", next);
+      try { localStorage.setItem("dash-theme", next); } catch (e) {}
+      syncThemeBtn(); render();
+    });
+    matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { syncThemeBtn(); render(); });
+    window.addEventListener("resize", () => Object.values(charts).forEach((c) => c.resize()));
+  }
+  function syncThemeBtn() {
+    const dark = document.documentElement.getAttribute("data-theme") === "dark" ||
+      (!document.documentElement.getAttribute("data-theme") && matchMedia("(prefers-color-scheme: dark)").matches);
+    $("themeBtn").textContent = dark ? "浅色" : "深色";
+  }
+
+  (async () => {
+    try { const t = localStorage.getItem("dash-theme"); if (t) document.documentElement.setAttribute("data-theme", t); } catch (e) {}
+    syncThemeBtn();
+    try { await load(); } catch (e) { $("app").textContent = "数据加载失败：" + e.message; return; }
+    bind();
+    let tab = null;
+    try { tab = localStorage.getItem("dash-tab"); } catch (e) {}
+    const btn = tab && document.querySelector(`nav.tabs button[data-tab="${tab}"]`);
+    if (btn) btn.click(); else render();
+  })();
+})();
+</script>
+</body>
+</html>
