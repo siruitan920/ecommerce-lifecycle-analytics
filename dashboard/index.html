@@ -139,7 +139,7 @@ footer { margin-top: 28px; color: var(--text-3); font-size: 12px; line-height: 1
     <div class="links">
       <a href="https://github.com/siruitan920/ecommerce-lifecycle-analytics">项目仓库</a>
       <a href="https://github.com/siruitan920/ecommerce-lifecycle-analytics/blob/main/docs/metrics_system.md">指标口径</a>
-      <a href="https://github.com/siruitan920/ecommerce-lifecycle-analytics/tree/main/notebooks">分析 notebook</a>
+      <a href="https://github.com/siruitan920/ecommerce-lifecycle-analytics/tree/main/notebooks">分析报告</a>
       <button class="theme-btn" id="themeBtn" type="button">深色</button>
     </div>
   </header>
@@ -255,7 +255,7 @@ footer { margin-top: 28px; color: var(--text-3); font-size: 12px; line-height: 1
         <h2>自动化检查</h2>
         <p class="note">由 pipeline/quality_checks.py 生成</p>
         <div class="dq-count" id="dqCount"></div>
-        <div class="callout"><b>最大的数据问题：</b>本地 11-14 22:00 ~ 11-16 10:59、11-16 19:00 ~ 11-17 05:59 购买事件丢失（不是延迟上报），浏览和加购正常。11-15、11-16 的 GMV、转化率不能用；大促前段「只加购不下单」是数据缺失造成的假象。<a href="https://github.com/siruitan920/ecommerce-lifecycle-analytics/blob/main/notebooks/01_data_quality_and_pipeline.ipynb">定位过程</a></div>
+        <div class="callout"><b>最大的数据问题：</b>本地 11-14 22:00 ~ 11-16 10:59、11-16 19:00 ~ 11-17 05:59 购买事件丢失（不是延迟上报），浏览和加购正常。11-15、11-16 的 GMV、转化率不能用；大促前段「只加购不下单」的现象由数据缺失导致，并非真实用户行为。<a href="https://github.com/siruitan920/ecommerce-lifecycle-analytics/blob/main/notebooks/01_data_quality_and_pipeline.ipynb">定位过程</a></div>
       </div>
     </div>
     <div class="card" style="margin-top:14px">
